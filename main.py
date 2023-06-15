@@ -2,14 +2,14 @@ import sys
 from PySide6.QtCore import QtMsgType 
 from PySide6.QtWidgets import QDialog, QApplication, QMainWindow, QStatusBar,  QTableWidgetItem
 
-from FrmDepto_ui import Ui_FrmDepto
+from agendarConsulta_ui import Ui_FormAgendarConsulta
 from FrmConexao_ui import Ui_dlgConexao 
 from datetime import datetime 
 import pyodbc as bd
 
 global conexao, meuCursor
 
-class FormPrincipal(QMainWindow, Ui_FrmDepto):
+class FormPrincipal(QMainWindow, Ui_FormAgendarConsulta):
 
     def __init__(self): 
         super().__init__() 
@@ -18,13 +18,15 @@ class FormPrincipal(QMainWindow, Ui_FrmDepto):
         self.setStatusBar(self.statusBar)
         self.show()
 
-        self.situacao = "navegando" 
-        self.action_Sair.triggered.connect(self.sairDoPrograma)
-        self.action_Novo.triggered.connect(self.novoRegistro) 
-        self.action_Editar.triggered.connect(self.editarRegistro) 
-        self.action_Salvar.triggered.connect(self.salvarRegistro)
-        self.action_Excluir.triggered.connect(self.excluirRegistro)
-        self.action_Cancelar.triggered.connect(self.cancelarAcao)
+
+
+        self.situacao = "navegando"
+        # self.sair.triggered.connect(self.sairDoPrograma)
+        # self.action_Novo.triggered.connect(self.novoRegistro) 
+        # self.action_Editar.triggered.connect(self.editarRegistro) 
+        # self.action_Salvar.triggered.connect(self.salvarRegistro)
+        # self.action_Excluir.triggered.connect(self.excluirRegistro)
+        # self.action_Cancelar.triggered.connect(self.cancelarAcao)
  
     def sairDoPrograma(self):
         conexao.close()  # importante fechar arquivo ao banco de dados 
@@ -51,7 +53,7 @@ class FormPrincipal(QMainWindow, Ui_FrmDepto):
 
     def salvarRegistro(self):
         if self.situacao == "incluindo": 
-            sComando = "Insert into Empresa.Departamento "+\
+            sComando = "Insert into clinicaVeterinaria.Departamento "+\
                 " (numDepto, nomeDepto, gerente_numSegSocial, "+\
                 " gerente_dataInicial) "+\
                 " values (?, ?, ?, Convert(date, ?, 103) ) "
@@ -70,7 +72,7 @@ class FormPrincipal(QMainWindow, Ui_FrmDepto):
                     mensagem = erro.args[1] 
                 self.statusBar.showMessage(mensagem)
         elif self.situacao == "editando":
-            sComando = "Update Empresa.Departamento "+\
+            sComando = "Update clinicaVeterinaria.Departamento "+\
                 " set nomeDepto = ?, gerente_numSegSocial = ?, "+\
                 " gerente_dataInicial = Convert(date, ?, 103) "+\
                 " where numDepto = ? "
@@ -93,7 +95,7 @@ class FormPrincipal(QMainWindow, Ui_FrmDepto):
         
     def excluirRegistro(self):
         self.situacao = "excluindo" 
-        sComando =  "Delete from Empresa.Departamento "+\
+        sComando =  "Delete from clinicaVeterinaria.Departamento "+\
                     " where numDepto = ? "
         try: # tente executar o comando abaixo: 
             meuCursor.execute(sComando, self.spbNumDepto.value()) 
@@ -108,7 +110,9 @@ class FormPrincipal(QMainWindow, Ui_FrmDepto):
             self.statusBar.showMessage(mensagem)
 
     def cancelarAcao(self): 
-        self.situacao = "navegando"                
+        self.situacao = "navegando"  
+        
+                      
 class DialogoConexao(QDialog, Ui_dlgConexao) :
     def __init__(self):
         super().__init__() 
@@ -117,7 +121,7 @@ class DialogoConexao(QDialog, Ui_dlgConexao) :
 
 if __name__ == "__main__":
     aplicacao = QApplication(sys.argv) 
-    dlgCon = DialogoConexao() 
+    dlgCon = DialogoConexao()
     if dlgCon.exec() == QDialog.Accepted: 
         try: 
             conexao = bd.connect(driver="SQL Server", 
@@ -127,8 +131,8 @@ if __name__ == "__main__":
                                 pwd=f"{dlgCon.edSenha.text()}") 
             print("Conexão bem sucedida!")
             meuCursor = conexao.cursor() # cursor: objeto de acesso ao BD
-            janela = FormPrincipal() 
-            aplicacao.exec() 
         except: 
             print("Não foi possível conectar ao banco de dados")
     
+        janela = FormPrincipal() 
+        aplicacao.exec() 
